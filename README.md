@@ -5,16 +5,14 @@ Composable, fully typed PyTorch self-attention for Python 3.12+.
 ## Development
 
 ```sh
-python3.12 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e '.[dev]'
-ruff check .
-ruff format --check .
-pyrefly check
-pytest -q
-python examples/quickstart.py
-python examples/custom_hook.py
-python -m build
+uv sync --locked
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+uv run --locked pyrefly check
+uv run --locked pytest -q
+uv run --locked python examples/quickstart.py
+uv run --locked python examples/custom_hook.py
+uv build
 ```
 
 ## Plain attention
@@ -58,3 +56,16 @@ This package is not published to PyPI.
 
 Tests compare composite attention against standalone functional equations with no
 library imports, composition or inheritance, including output and gradient checks.
+
+## uv workflow
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run
+`uv sync --locked`. Python 3.12 is selected by `.python-version`; `uv.lock` pins
+runtime and development dependencies. CI uses the same locked environment.
+Use `uv add PACKAGE`, `uv add --dev TOOL`, or `uv lock --upgrade` when deliberately
+updating dependencies, and commit the changed lockfile.
+
+The project selects CPU PyTorch wheels on Linux/Windows to keep CI lightweight;
+macOS uses PyPI wheels. GPU users can adapt the named PyTorch index to their CUDA
+version and regenerate the lock, or install the wheel into an existing PyTorch
+environment. The published package metadata does not force a CPU-only index.

@@ -10,8 +10,16 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = ["torch>=2.5", "typing-extensions>=4.12"]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = ["pytest>=8", "ruff>=0.11", "pyrefly>=0.30", "build>=1.2", "numpy>=1.26"]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/attention_compose"]
