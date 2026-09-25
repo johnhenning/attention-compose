@@ -2,11 +2,11 @@ from collections.abc import Sequence
 from typing import TypedDict, Unpack
 
 from .attention import Attention
-from .context import FullContext
+from .context import FullContext, LocalContext, LocalGlobalContext
 from .hooks import AttentionHook
 from .kernels import AttentionKernel
 from .projections import GroupedQueryProjection, MultiHeadProjection, MultiQueryProjection
-from .retention import RetentionPolicy
+from .retention import AttentionSinkRetention, RetentionPolicy, SlidingWindowRetention
 from .state import DenseKVCacheManager, DenseKVState
 
 
@@ -40,6 +40,41 @@ class MultiQueryAttention(Attention):
         super().__init__(MultiQueryProjection(d_model, num_query_heads), **options)
 
 
+class LocalAttention(Attention):
+    def __init__(
+        self, d_model: int, num_heads: int, window_size: int, **options: Unpack[AttentionOptions]
+    ) -> None:
+        super().__init__(
+            MultiHeadProjection(d_model, num_heads),
+            context_policy=LocalContext(window_size),
+            **options,
+        )
+
+
+class SparseAttention(Attention):
+    def __init__(
+        self,
+        d_model: int,
+        num_heads: int,
+        window_size: int,
+        *,
+        num_global_tokens: int = 1,
+        global_positions: tuple[int, ...] = (),
+        global_queries: bool = False,
+        **options: Unpack[AttentionOptions],
+    ) -> None:
+        super().__init__(
+            MultiHeadProjection(d_model, num_heads),
+            context_policy=LocalGlobalContext(
+                window_size,
+                num_global_tokens,
+                global_positions=global_positions,
+                global_queries=global_queries,
+            ),
+            **options,
+        )
+
+
 class CachedAttention(Attention[DenseKVState]):
     def __init__(
         self,
@@ -57,5 +92,45 @@ class CachedAttention(Attention[DenseKVState]):
             ),
             DenseKVCacheManager(retention, detach=detach),
             FullContext(),
+            **options,
+        )
+
+
+class SlidingWindowAttention(Attention[DenseKVState]):
+    def __init__(
+        self, d_model: int, num_heads: int, window_size: int, **options: Unpack[AttentionOptions]
+    ) -> None:
+        if options.get("causal", True) is False:
+            raise ValueError("sliding cached attention requires causal=True")
+        super().__init__(
+            MultiHeadProjection(d_model, num_heads),
+            DenseKVCacheManager(SlidingWindowRetention(window_size)),
+            LocalContext(window_size),
+            **options,
+        )
+
+
+class AttentionSinkAttention(Attention[DenseKVState]):
+    """A total budget of window_size, including num_sink_tokens initial tokens.
+
+    Start at position zero so retained initial tokens and global keys coincide.
+    """
+
+    def __init__(
+        self,
+        d_model: int,
+        num_heads: int,
+        window_size: int,
+        num_sink_tokens: int = 4,
+        **options: Unpack[AttentionOptions],
+    ) -> None:
+        if options.get("causal", True) is False:
+            raise ValueError("sink cached attention requires causal=True")
+        super().__init__(
+            MultiHeadProjection(d_model, num_heads),
+            DenseKVCacheManager(
+                AttentionSinkRetention(window_size, num_sink_tokens), require_zero_start=True
+            ),
+            LocalGlobalContext(window_size - num_sink_tokens, num_sink_tokens),
             **options,
         )

@@ -1,10 +1,14 @@
 from .attention import Attention
-from .context import ContextPolicy, FullContext
+from .context import ContextPolicy, FullContext, LocalContext, LocalGlobalContext
 from .convenience import (
+    AttentionSinkAttention,
     CachedAttention,
     GroupedQueryAttention,
+    LocalAttention,
     MultiHeadAttention,
     MultiQueryAttention,
+    SlidingWindowAttention,
+    SparseAttention,
 )
 from .hooks import AttentionHook
 from .kernels import AttentionKernel, ReferenceAttentionKernel, SDPAAttentionKernel, expand_kv_heads
@@ -14,7 +18,12 @@ from .projections import (
     MultiHeadProjection,
     MultiQueryProjection,
 )
-from .retention import FullRetention, RetentionPolicy
+from .retention import (
+    AttentionSinkRetention,
+    FullRetention,
+    RetentionPolicy,
+    SlidingWindowRetention,
+)
 from .state import AttentionStateManager, DenseKVCacheManager, DenseKVState, StatelessManager
 from .types import QKV, AttentionContext, AttentionOutput, PreparedAttention
 
@@ -25,6 +34,8 @@ __all__ = [
     "AttentionKernel",
     "AttentionOutput",
     "AttentionProjection",
+    "AttentionSinkAttention",
+    "AttentionSinkRetention",
     "AttentionStateManager",
     "CachedAttention",
     "ContextPolicy",
@@ -34,6 +45,9 @@ __all__ = [
     "FullRetention",
     "GroupedQueryAttention",
     "GroupedQueryProjection",
+    "LocalAttention",
+    "LocalContext",
+    "LocalGlobalContext",
     "MultiHeadAttention",
     "MultiHeadProjection",
     "MultiQueryAttention",
@@ -43,6 +57,9 @@ __all__ = [
     "ReferenceAttentionKernel",
     "RetentionPolicy",
     "SDPAAttentionKernel",
+    "SlidingWindowAttention",
+    "SlidingWindowRetention",
+    "SparseAttention",
     "StatelessManager",
     "expand_kv_heads",
 ]

@@ -76,6 +76,34 @@ Dense caches preserve autograd across calls; set detach=True to stop gradients
 through old calls. FullRetention keeps all history. The manager returns current
 context separately from future storage, enabling retention policies to be added.
 
+## Retention and structural policies
+
+```python
+from attention_compose import SlidingWindowAttention, AttentionSinkAttention
+
+local = SlidingWindowAttention(64, 8, window_size=128)
+sinks = AttentionSinkAttention(64, 8, window_size=128, num_sink_tokens=4)
+```
+
+SlidingWindowRetention preserves the latest W entries. AttentionSinkRetention
+uses a total budget W including S initial entries plus W-S recent entries.
+LocalContext(W) allows absolute distance < W; causal masking then excludes future
+keys. LocalGlobalContext adds initial or explicit global keys and optional global
+queries, always subject to causality. These are dense Boolean visibility masks,
+not computationally sparse kernels. Arbitrary global keys require a retention
+policy that preserves them.
+
+SlidingWindowAttention pairs matching retention and context. AttentionSinkAttention
+pairs sinks with local/global context and enforces a zero initial position.
+For causal eval these compositions give equivalent full and chunked outputs.
+SparseAttention and LocalAttention are stateless convenience classes.
+
+Retention limits the next state's stored keys; context determines current query
+visibility. Retention alone with FullContext can depend on chunk boundaries.
+Eviction happens after constructing the current context, so prompt chunks larger
+than the budget still see their required keys. Temporary prefill memory is not
+bounded by the persistent cache budget.
+
 Tests compare composite attention against standalone functional equations with no
 library imports, composition or inheritance, including output and gradient checks.
 
