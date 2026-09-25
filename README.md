@@ -25,6 +25,20 @@ uv sync --locked
 The package is installed as `attention-compose` and imported as `attention_compose`.
 It has not been published to PyPI.
 
+## Notebook demo
+
+Open the executed [hands-on demo](notebooks/attention_compose_demo.ipynb) for
+composition, direct-reference comparisons, cached decoding, mask visualizations,
+window/sink retention, INT8 storage/error plots, hooks, and the config factory.
+
+```sh
+uv sync --locked --group demo
+uv run --group demo jupyter lab notebooks/attention_compose_demo.ipynb
+```
+
+Choose the project's Python kernel and run all cells in order. For automated
+verification, run `uv run --group demo python notebooks/execute.py`.
+
 ## Start with plain attention
 
 ```python
