@@ -25,3 +25,14 @@ jobs:
       - run: uv run --locked python examples/quickstart.py
       - run: uv run --locked python examples/custom_hook.py
       - run: uv build
+
+  notebook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv python install
+      - run: uv sync --locked --group demo
+      - run: uv run --locked --group demo python notebooks/execute.py
