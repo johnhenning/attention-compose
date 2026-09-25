@@ -1,6 +1,11 @@
 from .attention import Attention
 from .context import ContextPolicy, FullContext
-from .convenience import GroupedQueryAttention, MultiHeadAttention, MultiQueryAttention
+from .convenience import (
+    CachedAttention,
+    GroupedQueryAttention,
+    MultiHeadAttention,
+    MultiQueryAttention,
+)
 from .hooks import AttentionHook
 from .kernels import AttentionKernel, ReferenceAttentionKernel, SDPAAttentionKernel, expand_kv_heads
 from .projections import (
@@ -9,7 +14,8 @@ from .projections import (
     MultiHeadProjection,
     MultiQueryProjection,
 )
-from .state import AttentionStateManager, StatelessManager
+from .retention import FullRetention, RetentionPolicy
+from .state import AttentionStateManager, DenseKVCacheManager, DenseKVState, StatelessManager
 from .types import QKV, AttentionContext, AttentionOutput, PreparedAttention
 
 __all__ = [
@@ -20,8 +26,12 @@ __all__ = [
     "AttentionOutput",
     "AttentionProjection",
     "AttentionStateManager",
+    "CachedAttention",
     "ContextPolicy",
+    "DenseKVCacheManager",
+    "DenseKVState",
     "FullContext",
+    "FullRetention",
     "GroupedQueryAttention",
     "GroupedQueryProjection",
     "MultiHeadAttention",
@@ -31,6 +41,7 @@ __all__ = [
     "PreparedAttention",
     "QKV",
     "ReferenceAttentionKernel",
+    "RetentionPolicy",
     "SDPAAttentionKernel",
     "StatelessManager",
     "expand_kv_heads",

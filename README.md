@@ -54,6 +54,28 @@ layers, or positional encoding. Positions are shared across the batch; padding,
 ragged batching and cross-attention are not included. Dropout is off in eval.
 This package is not published to PyPI.
 
+## Dense KV cache
+
+```python
+import torch
+from attention_compose import CachedAttention
+
+model = CachedAttention(64, 8, num_kv_heads=2).eval()
+with torch.inference_mode():
+    prefill = model(torch.randn(2, 10, 64))
+    decoded = model(torch.randn(2, 1, 64), prefill.state)
+    assert decoded.state is not None and decoded.state.next_position == 11
+```
+
+`DenseKVCacheManager` keeps caller-owned immutable records (tensor payloads should
+be treated read-only). Passing None starts a new sequence. Cached positions must
+be contiguous and continue at next_position; a nonzero initial offset is allowed.
+Batch, dtype and device must stay consistent. State is not in model.state_dict()
+and is not moved by model.to(). Reset it after moving or changing the module.
+Dense caches preserve autograd across calls; set detach=True to stop gradients
+through old calls. FullRetention keeps all history. The manager returns current
+context separately from future storage, enabling retention policies to be added.
+
 Tests compare composite attention against standalone functional equations with no
 library imports, composition or inheritance, including output and gradient checks.
 

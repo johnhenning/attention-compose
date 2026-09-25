@@ -2,9 +2,12 @@ from collections.abc import Sequence
 from typing import TypedDict, Unpack
 
 from .attention import Attention
+from .context import FullContext
 from .hooks import AttentionHook
 from .kernels import AttentionKernel
 from .projections import GroupedQueryProjection, MultiHeadProjection, MultiQueryProjection
+from .retention import RetentionPolicy
+from .state import DenseKVCacheManager, DenseKVState
 
 
 class AttentionOptions(TypedDict, total=False):
@@ -35,3 +38,24 @@ class MultiQueryAttention(Attention):
         self, d_model: int, num_query_heads: int, **options: Unpack[AttentionOptions]
     ) -> None:
         super().__init__(MultiQueryProjection(d_model, num_query_heads), **options)
+
+
+class CachedAttention(Attention[DenseKVState]):
+    def __init__(
+        self,
+        d_model: int,
+        num_query_heads: int,
+        *,
+        num_kv_heads: int | None = None,
+        retention: RetentionPolicy | None = None,
+        detach: bool = False,
+        **options: Unpack[AttentionOptions],
+    ) -> None:
+        super().__init__(
+            GroupedQueryProjection(
+                d_model, num_query_heads, num_query_heads if num_kv_heads is None else num_kv_heads
+            ),
+            DenseKVCacheManager(retention, detach=detach),
+            FullContext(),
+            **options,
+        )
