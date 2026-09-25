@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "attention-compose"
+version = "0.1.0"
+description = "Typed, composable PyTorch attention with pluggable KV caches"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["torch>=2.5", "typing-extensions>=4.12"]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.11", "pyrefly>=0.30", "build>=1.2", "numpy>=1.26"]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux' or sys_platform == 'win32'" }]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/attention_compose"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ANN"]
+# Python 3.12 needs typing_extensions.TypeVar for generic defaults (PEP 696).
+ignore = ["UP046"]
+
+[tool.pyrefly]
+python-version = "3.12"
+project-includes = ["src", "tests", "examples"]
+search-path = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
