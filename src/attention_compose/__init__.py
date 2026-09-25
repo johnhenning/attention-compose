@@ -1,4 +1,7 @@
+"""Compose projections, state managers, policies, kernels, and hooks."""
+
 from .attention import Attention
+from .config import AttentionConfig, BuiltAttention, CacheKind, build_attention
 from .context import ContextPolicy, FullContext, LocalContext, LocalGlobalContext
 from .convenience import (
     AttentionSinkAttention,
@@ -7,6 +10,7 @@ from .convenience import (
     LocalAttention,
     MultiHeadAttention,
     MultiQueryAttention,
+    QuantizedCachedAttention,
     SlidingWindowAttention,
     SparseAttention,
 )
@@ -24,11 +28,21 @@ from .retention import (
     RetentionPolicy,
     SlidingWindowRetention,
 )
-from .state import AttentionStateManager, DenseKVCacheManager, DenseKVState, StatelessManager
+from .state import (
+    AttentionStateManager,
+    DenseKVCacheManager,
+    DenseKVState,
+    Int8KVCacheManager,
+    Int8KVState,
+    QuantizedTensor,
+    StatelessManager,
+)
 from .types import QKV, AttentionContext, AttentionOutput, PreparedAttention
 
 __all__ = [
+    "QKV",
     "Attention",
+    "AttentionConfig",
     "AttentionContext",
     "AttentionHook",
     "AttentionKernel",
@@ -37,6 +51,8 @@ __all__ = [
     "AttentionSinkAttention",
     "AttentionSinkRetention",
     "AttentionStateManager",
+    "BuiltAttention",
+    "CacheKind",
     "CachedAttention",
     "ContextPolicy",
     "DenseKVCacheManager",
@@ -45,6 +61,8 @@ __all__ = [
     "FullRetention",
     "GroupedQueryAttention",
     "GroupedQueryProjection",
+    "Int8KVCacheManager",
+    "Int8KVState",
     "LocalAttention",
     "LocalContext",
     "LocalGlobalContext",
@@ -53,7 +71,8 @@ __all__ = [
     "MultiQueryAttention",
     "MultiQueryProjection",
     "PreparedAttention",
-    "QKV",
+    "QuantizedCachedAttention",
+    "QuantizedTensor",
     "ReferenceAttentionKernel",
     "RetentionPolicy",
     "SDPAAttentionKernel",
@@ -61,5 +80,6 @@ __all__ = [
     "SlidingWindowRetention",
     "SparseAttention",
     "StatelessManager",
+    "build_attention",
     "expand_kv_heads",
 ]

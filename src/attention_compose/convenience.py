@@ -1,3 +1,5 @@
+"""Named compositions; every class uses the same Attention.forward pipeline."""
+
 from collections.abc import Sequence
 from typing import TypedDict, Unpack
 
@@ -7,7 +9,7 @@ from .hooks import AttentionHook
 from .kernels import AttentionKernel
 from .projections import GroupedQueryProjection, MultiHeadProjection, MultiQueryProjection
 from .retention import AttentionSinkRetention, RetentionPolicy, SlidingWindowRetention
-from .state import DenseKVCacheManager, DenseKVState
+from .state import DenseKVCacheManager, DenseKVState, Int8KVCacheManager, Int8KVState
 
 
 class AttentionOptions(TypedDict, total=False):
@@ -92,6 +94,25 @@ class CachedAttention(Attention[DenseKVState]):
             ),
             DenseKVCacheManager(retention, detach=detach),
             FullContext(),
+            **options,
+        )
+
+
+class QuantizedCachedAttention(Attention[Int8KVState]):
+    def __init__(
+        self,
+        d_model: int,
+        num_query_heads: int,
+        *,
+        num_kv_heads: int | None = None,
+        retention: RetentionPolicy | None = None,
+        **options: Unpack[AttentionOptions],
+    ) -> None:
+        super().__init__(
+            GroupedQueryProjection(
+                d_model, num_query_heads, num_query_heads if num_kv_heads is None else num_kv_heads
+            ),
+            Int8KVCacheManager(retention),
             **options,
         )
 
